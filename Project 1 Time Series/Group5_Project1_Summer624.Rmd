@@ -1,0 +1,119 @@
+---
+title: "Project 1 Group 5"
+author: "Aaron Zalki, Mia Siracusa, Lidiia Tronina, John Suh, Henry Vasquez"
+date: "6/21/2020"
+output: word_document
+---
+
+```{r}
+
+library(dplyr)
+data <- readxl::read_excel('./Data Set for Class.xls')%>%
+ mutate(SeriesInd = as.Date(SeriesInd, "1899-12-30"))
+
+data%>%
+  summary()
+
+```
+
+
+```{r}
+data1 <- data %>%
+  filter(between(SeriesInd, as.Date("2011-05-06"),as.Date("2017-10-13")))
+data1%>%
+  summary()
+```
+```{r}
+data1%>%
+  filter(!complete.cases(.)) 
+
+```
+
+```{r}
+data_cc <- data1%>%
+  filter(complete.cases(.)) 
+medians <- data_cc %>%
+  group_by(group) %>%
+  summarise(med = median(Var01))
+data1[is.na(data1$Var01) & data1$group == 'S01', ]$Var01 <- medians$med[medians$group == 'S01'][1] 
+data1[is.na(data1$Var01) & data1$group == 'S02', ]$Var01 <- medians$med[medians$group == 'S02'][1] 
+data1[is.na(data1$Var01) & data1$group == 'S03', ]$Var01 <- medians$med[medians$group == 'S03'][1] 
+data1[is.na(data1$Var01) & data1$group == 'S04', ]$Var01 <- medians$med[medians$group == 'S04'][1] 
+data1[is.na(data1$Var01) & data1$group == 'S05', ]$Var01 <- medians$med[medians$group == 'S05'][1] 
+data1[is.na(data1$Var01) & data1$group == 'S06', ]$Var01 <- medians$med[medians$group == 'S06'][1] 
+
+medians <- data_cc %>%
+  group_by(group) %>%
+  summarise(med = median(Var02))
+data1[is.na(data1$Var02) & data1$group == 'S05', ]$Var02 <- medians$med[medians$group == 'S05'][1] 
+data1[is.na(data1$Var02) & data1$group == 'S06', ]$Var02 <- medians$med[medians$group == 'S06'][1] 
+
+medians <- data_cc %>%
+  group_by(group) %>%
+  summarise(med = median(Var03))
+data1[is.na(data1$Var03) & data1$group == 'S01', ]$Var03 <- medians$med[medians$group == 'S01'][1] 
+data1[is.na(data1$Var03) & data1$group == 'S02', ]$Var03 <- medians$med[medians$group == 'S02'][1] 
+data1[is.na(data1$Var03) & data1$group == 'S03', ]$Var03 <- medians$med[medians$group == 'S03'][1] 
+data1[is.na(data1$Var03) & data1$group == 'S04', ]$Var03 <- medians$med[medians$group == 'S04'][1] 
+data1[is.na(data1$Var03) & data1$group == 'S05', ]$Var03 <- medians$med[medians$group == 'S05'][1] 
+data1[is.na(data1$Var03) & data1$group == 'S06', ]$Var03 <- medians$med[medians$group == 'S06'][1] 
+
+
+medians <- data_cc %>%
+  group_by(group) %>%
+  summarise(med = median(Var05))
+data1[is.na(data1$Var05) & data1$group == 'S01', ]$Var05 <- medians$med[medians$group == 'S01'][1] 
+data1[is.na(data1$Var05) & data1$group == 'S02', ]$Var05 <- medians$med[medians$group == 'S02'][1] 
+data1[is.na(data1$Var05) & data1$group == 'S03', ]$Var05 <- medians$med[medians$group == 'S03'][1] 
+data1[is.na(data1$Var05) & data1$group == 'S04', ]$Var05 <- medians$med[medians$group == 'S04'][1] 
+data1[is.na(data1$Var05) & data1$group == 'S05', ]$Var05 <- medians$med[medians$group == 'S05'][1] 
+data1[is.na(data1$Var05) & data1$group == 'S06', ]$Var05 <- medians$med[medians$group == 'S06'][1] 
+
+medians <- data_cc %>%
+  group_by(group) %>%
+  summarise(med = median(Var07))
+data1[is.na(data1$Var07) & data1$group == 'S01', ]$Var07 <- medians$med[medians$group == 'S01'][1] 
+data1[is.na(data1$Var07) & data1$group == 'S02', ]$Var07 <- medians$med[medians$group == 'S02'][1] 
+data1[is.na(data1$Var07) & data1$group == 'S03', ]$Var07 <- medians$med[medians$group == 'S03'][1] 
+data1[is.na(data1$Var07) & data1$group == 'S04', ]$Var07 <- medians$med[medians$group == 'S04'][1] 
+data1[is.na(data1$Var07) & data1$group == 'S05', ]$Var07 <- medians$med[medians$group == 'S05'][1] 
+data1[is.na(data1$Var07) & data1$group == 'S06', ]$Var07 <- medians$med[medians$group == 'S06'][1] 
+
+data1%>%
+  summary()
+
+```
+S01 – Forecast  Var01, Var02
+S02 – Forecast  Var02, Var03
+S03 – Forecast  Var05, Var07
+S04 – Forecast  Var01, Var02
+S05 – Forecast  Var02, Var03
+S06 – Forecast  Var05, Var07
+
+
+
+##S01 – Forecast  Var01
+
+```{r}
+s01_var01 <- data1%>%
+  filter(group =='S01' ) %>%
+  select(SeriesInd, Var01)
+
+```
+
+```{r}
+library(fpp2)
+s01_var01<- ts(s01_var01[,2], start = c(2011,88), frequency = 261)
+autoplot(s01_var01)
+```
+
+
+```{r}
+ggseasonplot(s01_var01)
+```
+
+
+```{r}
+s01_var01 %>% decompose(type = "multiplicative") %>%
+  autoplot()  + xlab("Year")
+```
