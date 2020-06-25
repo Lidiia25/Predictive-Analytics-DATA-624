@@ -1,0 +1,229 @@
+---
+title: "Project 1 Group 5"
+author: "Aaron Zalki, Mia Siracusa, Lidiia Tronina, John Suh, Henry Vasquez"
+date: "6/21/2020"
+output: word_document
+---
+
+
+In the first part of this project, we want to perform fundamental analysis of the data.
+
+###Import and Clean Data
+
+First step is to import the data from excel. When we imported the excel file, R was not reading the dates correctly, so we converted the first column in the date format.
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+library(dplyr)
+library(fpp2)
+data <- readxl::read_excel('./Data Set for Class.xls')%>%
+ mutate(SeriesInd = as.Date(SeriesInd, "1899-12-30"))
+
+data%>%
+  summary()
+
+```
+
+
+Next step is to examine the data before converting it to a time series to see if there is any missing data or other problems with the data. By doing this we discovered a few problems that needed to be dealt with:
+
+1.      All variables except date are NA after 10/13/17.
+2.      There are several NA that are in the middle of the data set.
+3.      There are outliers in data that are far above the normal.
+4.      The date field has only workdays (Monday through Friday).
+ 
+We removed all blank observations after 10/13/17. Other NA’s data were imputed using the median since the number of missing values was so small. We used median for each variable and group separately.
+
+
+```{r, include=FALSE, message=FALSE, warning=FALSE, echo=FALSE}
+data1 <- data %>%
+  filter(between(SeriesInd, as.Date("2011-05-06"),as.Date("2017-10-13")))
+data1%>%
+  summary()
+data1%>%
+  filter(!complete.cases(.)) 
+data_cc <- data1%>%
+  filter(complete.cases(.)) 
+medians <- data_cc %>%
+  group_by(group) %>%
+  summarise(med = median(Var01))
+data1[is.na(data1$Var01) & data1$group == 'S01', ]$Var01 <- medians$med[medians$group == 'S01'][1] 
+data1[is.na(data1$Var01) & data1$group == 'S02', ]$Var01 <- medians$med[medians$group == 'S02'][1] 
+data1[is.na(data1$Var01) & data1$group == 'S03', ]$Var01 <- medians$med[medians$group == 'S03'][1] 
+data1[is.na(data1$Var01) & data1$group == 'S04', ]$Var01 <- medians$med[medians$group == 'S04'][1] 
+data1[is.na(data1$Var01) & data1$group == 'S05', ]$Var01 <- medians$med[medians$group == 'S05'][1] 
+data1[is.na(data1$Var01) & data1$group == 'S06', ]$Var01 <- medians$med[medians$group == 'S06'][1] 
+
+medians <- data_cc %>%
+  group_by(group) %>%
+  summarise(med = median(Var02))
+data1[is.na(data1$Var02) & data1$group == 'S05', ]$Var02 <- medians$med[medians$group == 'S05'][1] 
+data1[is.na(data1$Var02) & data1$group == 'S06', ]$Var02 <- medians$med[medians$group == 'S06'][1] 
+
+medians <- data_cc %>%
+  group_by(group) %>%
+  summarise(med = median(Var03))
+data1[is.na(data1$Var03) & data1$group == 'S01', ]$Var03 <- medians$med[medians$group == 'S01'][1] 
+data1[is.na(data1$Var03) & data1$group == 'S02', ]$Var03 <- medians$med[medians$group == 'S02'][1] 
+data1[is.na(data1$Var03) & data1$group == 'S03', ]$Var03 <- medians$med[medians$group == 'S03'][1] 
+data1[is.na(data1$Var03) & data1$group == 'S04', ]$Var03 <- medians$med[medians$group == 'S04'][1] 
+data1[is.na(data1$Var03) & data1$group == 'S05', ]$Var03 <- medians$med[medians$group == 'S05'][1] 
+data1[is.na(data1$Var03) & data1$group == 'S06', ]$Var03 <- medians$med[medians$group == 'S06'][1] 
+
+medians <- data_cc %>%
+  group_by(group) %>%
+  summarise(med = median(Var05))
+data1[is.na(data1$Var05) & data1$group == 'S01', ]$Var05 <- medians$med[medians$group == 'S01'][1] 
+data1[is.na(data1$Var05) & data1$group == 'S02', ]$Var05 <- medians$med[medians$group == 'S02'][1] 
+data1[is.na(data1$Var05) & data1$group == 'S03', ]$Var05 <- medians$med[medians$group == 'S03'][1] 
+data1[is.na(data1$Var05) & data1$group == 'S04', ]$Var05 <- medians$med[medians$group == 'S04'][1] 
+data1[is.na(data1$Var05) & data1$group == 'S05', ]$Var05 <- medians$med[medians$group == 'S05'][1] 
+data1[is.na(data1$Var05) & data1$group == 'S06', ]$Var05 <- medians$med[medians$group == 'S06'][1] 
+
+medians <- data_cc %>%
+  group_by(group) %>%
+  summarise(med = median(Var07))
+data1[is.na(data1$Var07) & data1$group == 'S01', ]$Var07 <- medians$med[medians$group == 'S01'][1] 
+data1[is.na(data1$Var07) & data1$group == 'S02', ]$Var07 <- medians$med[medians$group == 'S02'][1] 
+data1[is.na(data1$Var07) & data1$group == 'S03', ]$Var07 <- medians$med[medians$group == 'S03'][1] 
+data1[is.na(data1$Var07) & data1$group == 'S04', ]$Var07 <- medians$med[medians$group == 'S04'][1] 
+data1[is.na(data1$Var07) & data1$group == 'S05', ]$Var07 <- medians$med[medians$group == 'S05'][1] 
+data1[is.na(data1$Var07) & data1$group == 'S06', ]$Var07 <- medians$med[medians$group == 'S06'][1] 
+```
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+data1%>%
+  summary()
+
+```
+
+
+Time series objects were created for each group and variable separately. We used 261 days as our frequency, which is the approximate number of weekdays in a year.
+
+
+
+###Forecast
+
+For each group and variable, we want to run at least 2 models, and see which has the better performance.
+Before running any models we will check the ACF and PACF plots, seasonal plot, time series decomposition plot to see what it can recommend for what type of model they suggest might be most appropriate.
+
+
+###S04 – Forecast  Var01
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s04_var01 <- data1%>%
+  filter(group =='S04' ) %>%
+  select(SeriesInd, Var01)
+s04_var01<- ts(s04_var01[,2], start = c(2011,88), frequency = 261)
+autoplot(s04_var01)
+```
+
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+ggseasonplot(s04_var01)
+```
+
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s04_var01 %>% decompose(type = "multiplicative") %>%
+  autoplot()  + xlab("Year")
+```
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s04_var01.arima <- auto.arima(s04_var01,  d =1, D= 1, stepwise = FALSE, approximation = FALSE)
+```
+
+
+###S04 – Forecast  Var02
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s04_var02 <- data1%>%
+  filter(group =='S04' ) %>%
+  select(SeriesInd, Var02)
+s04_var02<- ts(s04_var02[,2], start = c(2011,88), frequency = 261)
+autoplot(s04_var02)
+```
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+ggseasonplot(s04_var02)
+```
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s04_var02 %>% decompose(type = "multiplicative") %>%
+  autoplot()  + xlab("Year")
+```
+
+
+###S05 – Forecast  Var02
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s05_var02 <- data1%>%
+  filter(group =='S05' ) %>%
+  select(SeriesInd, Var02)
+s05_var02<- ts(s05_var02[,2], start = c(2011,88), frequency = 261)
+autoplot(s05_var02)
+```
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+ggseasonplot(s05_var02)
+```
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s05_var02 %>% decompose(type = "multiplicative") %>%
+  autoplot()  + xlab("Year")
+```
+
+###S05 – Forecast  Var03
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s05_var03 <- data1%>%
+  filter(group =='S05' ) %>%
+  select(SeriesInd, Var03)
+s05_var03<- ts(s05_var03[,2], start = c(2011,88), frequency = 261)
+autoplot(s05_var03)
+```
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+ggseasonplot(s05_var03)
+```
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s05_var03 %>% decompose(type = "multiplicative") %>%
+  autoplot()  + xlab("Year")
+```
+
+###S06 – Forecast  Var05
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s06_var05 <- data1%>%
+  filter(group =='S06' ) %>%
+  select(SeriesInd, Var05)
+s06_var05<- ts(s06_var05[,2], start = c(2011,88), frequency = 261)
+autoplot(s06_var05)
+```
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+ggseasonplot(s06_var05)
+```
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s06_var05 %>% decompose(type = "multiplicative") %>%
+  autoplot()  + xlab("Year")
+```
+
+###S06 – Forecast  Var07
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s06_var07 <- data1%>%
+  filter(group =='S06' ) %>%
+  select(SeriesInd, Var07)
+s06_var07<- ts(s06_var07[,2], start = c(2011,88), frequency = 261)
+autoplot(s06_var07)
+```
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+ggseasonplot(s06_var07)
+```
+
+```{r, include=TRUE, message=FALSE, warning=FALSE, echo=FALSE}
+s06_var07 %>% decompose(type = "multiplicative") %>%
+  autoplot()  + xlab("Year")
+```
